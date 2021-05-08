@@ -1,0 +1,183 @@
+{% extends "base.html" %}
+
+{% load bootstrapify %}
+{% load static %}
+{% load departments %}
+
+{% block stylesheets %}
+{% include "calendar/css_template.html" %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.1.2/css/tempusdominus-bootstrap-4.min.css" integrity="sha256-XPTBwC3SBoWHSmKasAk01c08M6sIA5gF5+sRxqak2Qs=" crossorigin="anonymous" />
+{% endblock stylesheets %}
+
+{% block content %}
+<div id="notifications"></div>
+<div id="editModal" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1>Edit shift</h1>
+      </div>
+      <div class="modal-body">
+        <form id="edit_shift" method="post">
+          {% csrf_token %}
+          {{ form.non_field_errors|bootstrapify_errors }}
+          {% for field in form %}
+          {% if field.id_for_label == "id_start" or field.id_for_label == "id_duration" %}
+          {{ field|bootstrapify_datepicker_field:"edit_shift"}}
+          {% else %}
+          {{ field|bootstrapify_field }}
+          {% endif %}
+          {% endfor %}
+          <input type="text" id="shift_id" value="" hidden>
+          <div class="mt-2 d-flex">
+            <button class="btn btn-secondary mr-2" type="button" data-toggle="modal" data-target="#editModal">Cancel</button>
+            <button class="btn btn-primary" type="submit">Submit</button>
+            <button class="btn btn-danger ml-auto" type="button" id="delete_shift">Delete</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="content">
+  <h1>Roster editor</h1>
+  <div class="wrapper">
+    <form class="mb-4" id="new_shift" method="post">
+      {% csrf_token %}
+      <div class="row">
+        {{ form.non_field_errors|bootstrapify_errors }}
+      </div>
+      <div class="row align-items-stretch">
+        <div class="col-sm-12 col-md-2 col-lg-2">
+          {{form.department|bootstrapify_field}}
+        </div>
+        <div class="col-sm-12 col-md-2 col-lg-2">
+          {{form.worker|bootstrapify_field}}
+        </div>
+        <div class="col-sm-12 col-md-2 col-lg-2">
+          {{form.shift_leader|bootstrapify_field}}
+        </div>
+        <div class="col-sm-12 col-md-2 col-lg-2">
+          {{ form.start|bootstrapify_datepicker_field:"new_shift" }}
+        </div>
+        <div class="col-sm-12 col-md-2 col-lg-2">
+          {{ form.duration|bootstrapify_datepicker_field:"new_shift" }}
+        </div>
+        <div class="col-sm-12 col-md-2 col-lg-2 xs-sm-mt-2 pt-md-3">
+          <button class="btn btn-primary" type="submit">Add shift</button>
+        </div>
+      </div>
+    </form>
+    <div class="mt-2 calendar-container">
+      <div id="calendar"></div>
+    </div>
+  </div>
+</div>
+{% endblock content %}
+
+{% block scripts %}
+{% include "calendar/js_template.html" %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/4.2.0/interaction/main.min.js" integrity="sha256-MUHmW5oHmLLsvmMWBO8gVtKYrjVwUSFau6pRXu8dtnA=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment-with-locales.min.js" integrity="sha256-AdQN98MVZs44Eq2yTwtoKufhnU+uZ7v2kXnD5vqzZVo=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.1.2/js/tempusdominus-bootstrap-4.min.js" integrity="sha256-z0oKYg6xiLq3yJGsp/LsY9XykbweQlHl42jHv2XTBz4=" crossorigin="anonymous"></script>
+<script src="{% static "js/calendar/editable.js" %}" type="text/javascript" charset="utf-8"></script>
+<script src="{% static "js/forms/validation.js" %}" type="text/javascript" charset="utf-8"></script>
+<script type="text/javascript">
+$(function () {
+
+});
+</script>
+<script type="text/javascript">
+$(function () {
+  const calendarEl = document.getElementById('calendar');
+  var calendar = new EditableCalendar(calendarEl, {
+    defaultView: "month",
+    eventSources: ["{% url 'api_shifts' %}"],
+    // height: 650,
+    height: "parent"
+  });
+  calendar.render();
+
+  $('[data-toggle="tooltip"]').tooltip({
+   container: 'body'
+});
+
+  $("#delete_shift").click(function () {
+    const id = $("#edit_shift").find("#shift_id").val();
+    $.ajax({type: "DELETE", url: "/api/shifts/"+id, dataType: "json"})
+    .done(() => resetForm("#edit_shift"))
+    .done(() => setAlert("#notifications", "Deleted shift", "success"))
+    .done(() => calendar.refetchEvents())
+    .done(() => $("#editModal").modal("toggle"))
+    .fail((xhr) => {
+      console.log(xhr);
+      setAlert("#notifications", xhr.responseJSON.error, "danger");
+    })
+  })
+
+  $("#new_shift").submit(function (e) {
+    e.preventDefault();
+    $.post({url: "/api/shifts", data: $(this).serialize(), dataType: "json"})
+    .done(() => resetForm("#new_shift"))
+    .done(() => setAlert("#notifications", "Added new shift", "success"))
+    .done(() => calendar.refetchEvents())
+    .fail((xhr) => {
+      if (xhr.responseJSON) {
+        removeErrors("#new_shift");
+        insertErrors("#new_shift", xhr.responseJSON.validationErrors);
+      } else {
+        setAlert("#notifications", "Failed to submit shift!", "danger");
+      }
+    })
+  });
+
+  $("#edit_shift").submit(function (e) {
+    e.preventDefault();
+    const id = $(this).find("#shift_id").val();
+    $.post({url: "/api/shifts/"+id, data: $(this).serialize(), dataType: "json"})
+    .done(() => resetForm("#edit_shift"))
+    .done(() => setAlert("#notifications", "Edited shift", "success"))
+    .done(() => calendar.refetchEvents())
+    .done(() => $("#editModal").modal("toggle"))
+    .fail((xhr) => {
+      if (xhr.responseJSON) {
+        removeErrors("#edit_shift");
+        insertErrors("#edit_shift", xhr.responseJSON.validationErrors);
+      } else {
+        setAlert("#notifications", "Failed to edit shift!", "danger");
+      }
+    })
+  });
+  const dateSettings = {
+    format: 'YYYY-MM-DD HH:mm',
+    locale: "en-gb",
+    sideBySide: true,
+    timeZone: "utc"
+  };
+  const timeSettings = {
+    format: 'HH:mm',
+    timeZone: "utc"
+  }
+  $('#new_shift #id_start').datetimepicker(dateSettings);
+  $('#edit_shift #id_start').datetimepicker(dateSettings);
+
+  $('#new_shift #id_duration').datetimepicker(Object.assign(
+    {}, timeSettings, {date: moment("{{form.duration.value}}", "hh:mm").toDate()}
+  ));
+  $('#edit_shift #id_duration').datetimepicker(timeSettings);
+
+  var csrftoken = jQuery("[name=csrfmiddlewaretoken]").val();
+  function csrfSafeMethod(method) {
+      // these HTTP methods do not require CSRF protection
+      return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+  }
+  $.ajaxSetup({
+      beforeSend: function(xhr, settings) {
+          if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+              xhr.setRequestHeader("X-CSRFToken", csrftoken);
+          }
+      }
+  });
+});
+</script>
+{% endblock scripts %}

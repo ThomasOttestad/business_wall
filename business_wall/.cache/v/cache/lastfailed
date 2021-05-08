@@ -1,0 +1,8 @@
+{
+  "roster/tests/test_acceptance.py": true, 
+  "roster/tests/test_api.py": true, 
+  "roster/tests/test_models.py": true, 
+  "schema/test/test_models.py": true, 
+  "timesheet/test/model_test.py": true, 
+  "timesheet/test/view_test.py": true
+}

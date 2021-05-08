@@ -1,0 +1,9 @@
+Your employer at {{company}} has registered an account for you on {{url}}.
+
+You can login with:
+
+Email: {{email}}
+
+Password: {{password}}
+
+The password was randomly generated, but we strongly encourage you to change it as soon as possible.

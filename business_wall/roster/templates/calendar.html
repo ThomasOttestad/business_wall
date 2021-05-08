@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load departments %}
+
+{% block title %}Calendar{% endblock %}
+
+{% block stylesheets %}
+{% include "calendar/css_template.html" %}
+{% endblock %}
+
+{% block content %}
+<div class="content">
+  <div id="alerts"></div>
+  <div id="calendarStreamDialog" class="modal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Get calendar stream</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p>
+          Copy the link below and paste it into any calendar app that accepts an
+          iCal stream (Google Calendar, iCal, Outlook, etc.)
+         </p>
+         <input id="iCalLink" class="form-control" type="text" value="" readonly="readonly">
+      </div>
+    </div>
+  </div>
+</div>
+<div class="wrapper">
+  <div class="row mb-2">
+    <div class="input-group col-xs-12 col-sm-12 col-md-3 offset-md-3 calendar-option-margin">
+      <div class="input-group-prepend">
+        <label class="input-group-text" for="eventSelector">Shifts</label>
+      </div>
+      <select id="eventSelector" class="form-control">
+        <option data-rss="{% url 'shift_feed_all' %}" value="{% url 'api_shifts' %}" selected>
+          All workers
+        </option>
+        <option data-rss="{% url 'shift_feed_worker' uid=user.pk %}" value="{% url 'api_shifts_user' uid=user.pk %}">
+          Your shifts
+        </option>
+        {% get_departments as departments %}
+        {% for department in departments %}
+        <option data-rss="{% url 'shift_feed_department' did=department.pk %}" value="{% url 'api_shifts_department' did=department.pk %}">
+          {{department}} department
+        </option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-xs-12 col-sm-12 col-md-3">
+      <button class="btn btn-outline-primary" id="copyIcalLink">
+        <i class="fas fa-rss"></i> Calendar stream
+      </button>
+    </div>
+  </div>
+    <div class="class="calendar-container"">
+      <div id="calendar"></div>
+    </div>
+</div>
+</div>
+{% endblock %}
+
+
+{% block scripts %}
+{% include "calendar/js_template.html" %}
+{# {% include "calendar/js_readonly.html" with user=user eventUrl=eventUrl %} #}
+<script src="{% static "js/calendar/readonly.js" %}" type="text/javascript" charset="utf-8"></script>
+<script src="{% static "js/forms/validation.js" %}" type="text/javascript" charset="utf-8"></script>
+<script type="text/javascript">
+currentUser = {{user.pk}};
+document.addEventListener('DOMContentLoaded', function() {
+  // var calendar = null;
+  const calendarEl = document.getElementById('calendar');
+  var calendar = new ReadOnlyCalendar(calendarEl, {
+    eventSources: [$("#eventSelector").val()],
+    height: "parent",
+  });
+  calendar.render();
+
+  // Handle popover clicks outside of popover
+  $('body').on('click', function (e) {
+    $('[data-trigger="click"]').each(function () {
+        //the 'is' for buttons that trigger popups
+        //the 'has' for icons within a button that triggers a popup
+        if (!$(this).is(e.target) && $(this).has(e.target).length === 0 && $('.popover').has(e.target).length === 0) {
+            $(this).popover('hide');
+        }
+    });
+  });
+
+  $("#copyIcalLink").click(function (e) {
+    $("#iCalLink").val(window.location.origin + $("#eventSelector").find(":selected").data("rss"));
+    $("#calendarStreamDialog").modal("toggle");
+  });
+
+  (function () {
+    let previous;
+    $("#eventSelector").on('focus', function () {
+        // Store the current value on focus and on change
+        previous = this.value;
+    }).change(function() {
+        // Do something with the previous value after the change
+        calendar.removeAllEventSources();
+        calendar.addEventSource(this.value);
+
+        // Make sure the previous value is updated
+        previous = this.value;
+    });
+  })();
+  $('.toast').toast('show');
+});
+</script>
+{% endblock %}

@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% load bootstrapify %}
+{% load crispy_forms_tags %}
+{% load static %}
+
+
+
+
+{% block content %}
+<div class="content">
+  <ol class="breadcrumb align-items-center mb-4">
+    <li class="breadcrumb-item">
+      <a href="{% url 'userprofile' %}">Profile</a>
+    </li>
+    <li class="breadcrumb-item active">Report issue</li>
+  </ol>
+  <div class="wrapper">
+    <h3 class="mb-3">Please input the issue you want to notify your supervisor about</h3>
+    <form action="{% url 'schema:create'%}" method="POST">
+      {% csrf_token %}
+        <div>
+          {{form.issue|as_crispy_field}}
+        </div>
+        <div>
+          {{form.content|as_crispy_field}}
+        </div>
+        <button type="submit" class="btn btn-primary">submit</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

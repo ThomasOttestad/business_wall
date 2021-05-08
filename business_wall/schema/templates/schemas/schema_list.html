@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block title %} Schema list {% endblock %}
+{% block content %}
+<div class="content">
+  <ol class="breadcrumb align-items-center mb-4">
+    <li class="breadcrumb-item">
+      <a href="{% url 'colleagues' %}">Colleagues</a>
+    </li>
+    <li class="breadcrumb-item active">Employee issues</li>
+  </ol>
+  <div class="wrapper">
+    <table class='table'>
+      <thead class='thead-ligth'>
+        <th>#</th>
+        <th>poster</th>
+        <th>issue </th>
+        <th>Select issue</th>
+      </thead>
+      <tbody>
+        {% if object_list|length == 0 %}
+          <tr>
+            <td colspan="">No issues</td>
+          </tr>
+        {% endif %}
+        {% for line in object_list %}
+          <tr>
+            <td colspan= "1"> {{line.schema_id}} </td>
+            <td> {{line.poster.get_full_name}} </td>
+            <td> {{line.issue}} </td>
+            <td> {{line.content}} </td>
+          </tr >
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

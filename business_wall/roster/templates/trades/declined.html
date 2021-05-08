@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="content">
+  <ol class="breadcrumb align-items-center mb-4">
+    <li class="breadcrumb-item">
+      <a href="{% url 'userprofile' %}">Profile</a>
+    </li>
+    <li class="breadcrumb-item active">Declined shift trades</li>
+  </ol>
+  <div class="wrapper">
+    {% include "trades/trade_table.html" with trades=declined %}
+  </div>
+</div>
+{% endblock content %}

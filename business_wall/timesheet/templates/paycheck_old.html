@@ -1,0 +1,276 @@
+{% extends 'base.html' %}
+{% load bootstrapify %}
+{% load timesheet_tag %}
+{% load static %}
+
+{% block stylesheets %}
+<link rel="stylesheet" href="{% static 'css/timesheet/paycheck.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="d-flex mt-3 m-1" style="background: rgb(209, 222, 223);">
+  <div class="side-wrapper">
+    {% if calenderform %}
+    <div style="float: left;">
+      <form method="POST">
+        {% csrf_token %}
+        {% for field in calenderform %}
+          {% if field.id_for_label != 'id_worker' %}
+            {{field|bootstrapify_field}}
+          {% endif %}
+        {% endfor %}
+        <input class="btn btn-dark" style="font-size: 15px;" type="submit" value="Select">
+      </form>
+    </div>
+    {% endif %}
+    {% if estimate is False %}
+      <div style="float:left">
+        <form action="{% url 'estimate_paycheck' %}">
+          <button class="btn btn-dark" name="estimate_paycheck">Estimate Paycheck</button>
+        </form>
+      </div>
+    {% endif %}
+    {% if estimate is True %}
+    <div style="float:left">
+      <form action="{% url 'paycheck' %}">
+        <button class="btn btn-dark">Paycheck</button>
+      </form>
+    </div>
+  {% endif %}
+  </div>
+  <div class="center-wrapper">
+    <div class="row" style="background: rgb(160, 171, 172);">
+      <div class="col-xs-12 col-sm-6 mt-3">
+        <div class="row">
+          <div class="col-xs-6 col-sm-2"></div>
+          <div class="col-xs-6 col-sm-2 ">
+            <h5> Name: </h5>         
+          </div>
+          <div class="col-xs-6 col-sm-6 mt-1">
+            <h6>{{user.last_name}}, {{user.first_name}} </h6> 
+          </div>
+        </div>
+      </div>
+      <div class="col-xs-12 col-sm-6 mt-3">
+        <div class="row">
+          <div class="col-xs-6 col-sm-1"></div>
+          <div class="col-xs-6 col-sm-3">
+            <h5> Company: </h5>
+          </div>
+          <div class="col-xs-6 col-sm-8 mt-1">
+            <h6> Business-Wall </h6>
+          </div>
+        </div>
+      </div>
+    </div>
+  
+    <div class="row mt-5">
+      <div class="col-xs-12 col-sm-12 mt-3">
+        <div class="row"> 
+          <div class="col-xs-6 col-sm-4"></div>
+          <div class="col-xs-4 col-sm-2">
+            <h5> Basis</h5>
+          </div>
+          <div class="col-xs-4 col-sm-2">
+            <h5> Quantity</h5>
+          </div>
+          <div class="col-xs-4 col-sm-2">
+            <h5> Rate</h5>
+          </div>
+          <div class="col-xs-4 col-sm-2">
+            <h5> Amount </h5>
+          </div>
+        </div>
+
+        <div class="row mt-2 border-bottom border-white">
+          <div class="col-xs-6 col-sm-4">
+            <h5> Hourly wage </h5>  
+          </div>
+          <div class="col-xs-4 col-sm-2">
+            <h6>{{additional_rate.normal_rate}}</h6>
+          </div>
+          <div class="col-xs-4 col-sm-2">
+            <h6>{{sum_duration|convert_hours}}</h6>
+          </div>
+          <div class="col-xs-4 col-sm-2">
+            <h6> {{rate_normal}} </h6>
+          </div>
+          <div class="col-xs-4 col-sm-2">
+            <h6> {{amount_normal}} </h6>
+          </div>
+        </div>
+        {% if sum_overtime %}
+          <div class="row mt-2  border-bottom  border-white">
+            <div class="col-xs-6 col-sm-4">
+              <h5> Overtime </h5>  
+            </div>
+            <div class="col-xs-4 col-sm-2">
+              <h6> {{additional_rate.overtime_rate}} </h6>
+            </div>
+            <div class="col-xs-4 col-sm-2">
+              <h6>{{sum_overtime|convert_hours}}</h6>
+            </div>
+            <div class="col-xs-4 col-sm-2">
+              <h6> {{rate_overtime}} </h6>
+            </div>
+            <div class="col-xs-4 col-sm-2">
+              <h6> {{amount_overtime}} </h6>
+            </div>
+          </div>
+        {% endif %}
+
+        {% if sum_weekend %}
+          <div class="row mt-2  border-bottom  border-white">
+            <div class="col-xs-6 col-sm-4">
+              <h5> Weekend </h5>  
+            </div>
+            <div class="col-xs-4 col-sm-2">
+              <h6> {{additional_rate.weekend_rate}} </h6>   
+            </div>
+            <div class="col-xs-4 col-sm-2">
+              <h6>{{sum_weekend|convert_hours}}</h6>
+            </div>
+            <div class="col-xs-4 col-sm-2">
+              <h6> {{rate_weekend}} </h6>
+            </div>
+            <div class="col-xs-4 col-sm-2">
+              <h6> {{amount_weekend}} </h6>
+            </div>
+          </div>        
+        {% endif %}
+
+        {% if sum_evening %}
+        <div class="row mt-2 border-bottom  border-white">
+          <div class="col-xs-6 col-sm-4">
+            <h5> Evening </h5>  
+          </div>
+          <div class="col-xs-4 col-sm-2">
+            <h6> {{additional_rate.evening_rate}} </h6>
+          </div>
+          <div class="col-xs-4 col-sm-2">
+            <h6>{{sum_evening|convert_hours}}</h6>
+          </div>
+          <div class="col-xs-4 col-sm-2">
+            <h6> {{rate_evening}} </h6>
+          </div>
+          <div class="col-xs-4 col-sm-2">
+            <h6> {{amount_evening}} </h6>
+          </div>
+        </div>
+        {% endif %}
+
+        {% if sum_holiday %}
+          <div class="row mt-2 border-bottom border-white">
+            <div class="col-xs-6 col-sm-4">
+              <h5> Holiday </h5>  
+            </div>
+            <div class="col-xs-4 col-sm-2">
+              <h6> {{additional_rate.holiday_rate}} </h6>
+            </div>
+            <div class="col-xs-4 col-sm-2">
+              <h6>{{sum_holiday|convert_hours}}</h6>
+            </div>
+            <div class="col-xs-4 col-sm-2">
+              <h6> {{rate_holiday}} </h6>
+            </div>
+            <div class="col-xs-4 col-sm-2">
+              <h6> {{amount_holiday}} </h6>
+            </div>
+          </div>
+        {% endif %}
+
+        <div class="row mt-3  border-bottom  border-white">
+          <div class="col-xs-6 col-sm-4">
+            <h5> Gross salary </h5>  
+          </div>
+          <div class="col-xs-4 col-sm-2">
+            <h6>  </h6>
+          </div>
+          <div class="col-xs-4 col-sm-2">
+            <h6> {{sum_total_time|convert_hours}} </h6>
+          </div>
+          <div class="col-xs-4 col-sm-2">
+            <h6>  </h6>
+          </div>
+          <div class="col-xs-4 col-sm-2">
+            <h6> {{wage}} </h6>
+          </div>
+        </div>
+
+        <div class="row mt-3 border-bottom  border-white">
+          <div class="col-xs-6 col-sm-4">
+            <h5> Withholding table </h5>  
+          </div>
+          <div class="col-xs-4 col-sm-2">
+            <h6> {{paycheck.taxes}} </h6>
+          </div>
+          <div class="col-xs-4 col-sm-2">
+            <h6> {{sum_total_time|convert_hours}} </h6>
+          </div>
+          <div class="col-xs-4 col-sm-2">
+            <h6>  </h6>
+          </div>
+          <div class="col-xs-4 col-sm-2">
+            <h6> {{taxes}} </h6>
+          </div>
+        </div>
+        <div class="row mt-3 border-bottom border-white">
+          <div class="col-xs-6 col-sm-4">
+            <h5> Holiday pay basis </h5>  
+          </div>
+          <div class="col-xs-4 col-sm-2">
+            <h6> {{paycheck.vacation_money_basis}} </h6>
+          </div>
+          <div class="col-xs-4 col-sm-2">
+            <h6>{{sum_total_time|convert_hours}}</h6>
+          </div>
+          <div class="col-xs-4 col-sm-2">
+            <h6>  </h6>
+          </div>
+          <div class="col-xs-4 col-sm-2">
+            <h6> {{vacation_money_basis}} </h6>
+          </div> 
+        </div>
+        <div class="row mt-3 border-bottom border-white">
+          <div class="col-xs-6 col-sm-4">
+            <h5> Holiday pay basis so far this year </h5>  
+          </div>
+          <div class="col-xs-4 col-sm-2">
+            <h6> {{paycheck.vacation_money_basis}} </h6>
+          </div>
+          <div class="col-xs-4 col-sm-2">
+            <h6> </h6>
+          </div>
+          <div class="col-xs-4 col-sm-2">
+            <h6>  </h6>
+          </div>
+          <div class="col-xs-4 col-sm-2">
+            <h6> {{tot_vac}} </h6>
+          </div> 
+        </div>  
+        <div class="row mt-3">
+          <div class="col-xs-6 col-sm-4">
+            <h5> Net salary for payment </h5>  
+          </div>
+          <div class="col-xs-4 col-sm-2">
+            <h6>  </h6>
+          </div>
+          <div class="col-xs-4 col-sm-2">
+            <h6>{{sum_total_time|convert_hours}}</h6>
+          </div>
+          <div class="col-xs-4 col-sm-2">
+            <h6>  </h6>
+          </div>
+          <div class="col-xs-4 col-sm-2">
+            <h6> {{paycheck.wage}} </h6>
+          </div> 
+        </div>  
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+
+{% endblock %}

@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% load bootstrapify %}
+{% block content %}
+
+<div>
+  <div class="content">
+    <ol class="breadcrumb align-items-center mb-4">
+      <li class="breadcrumb-item">
+        <a href="{% url 'userprofile' %}">Profile</a>
+      </li>
+      <li class="breadcrumb-item active">Change profile picture</li>
+    </ol>
+
+    <div class="wrapper">
+      <form method="post" enctype="multipart/form-data">
+          <h3>Change your profile picture:</h3>
+          {% csrf_token   %}
+          {% for field in form %}
+              {{field|bootstrapify_field}}
+          {% endfor %}
+          <div class="mt-3">
+            <button class="btn btn-primary" type="submit">Upload</button>
+            <a class="btn btn-secondary" href="{% url 'userprofile' %}">Cancel</a>
+          </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock content %}

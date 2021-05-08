@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block title %} Boards {% endblock %}
+{% block content%}
+<div class="content">
+    <ol class="breadcrumb align-items-center mb-4">
+      <li class="breadcrumb-item"><a href="{% url 'board_home' %}" style="text-decoration: none;">Boards</a></li>
+      <li class="breadcrumb-item active">{{ board.name }}</li>
+      <li class="ml-auto">
+        <a href="{% url 'new_topic' board.pk %}" class="btn btn-primary">
+          <i class="fas fa-plus-square"></i> New Topic
+        </a>
+      </li>
+    </ol>
+
+
+
+    <div class="wrapper">
+      <table class="table p-3 mb-5 rounded">
+          <thead class="thead-light">
+              <tr>
+                  <th>Topic</th>
+                  <th>Starter</th>
+                  <th>Replies</th>
+                  <th>Views</th>
+                  <th>Last Updated</th>
+              </tr>
+          </thead>
+          <tbody>
+              {% for topic in topics %}
+              <tr>
+                  {% if topic.pinned %}
+                  <td><a href="{% url 'topic_posts' topic.board.pk topic.pk %}"
+                          style="text-decoration: none;"><strong>{{ topic.subject }}</strong></a>
+                  </td>
+                  {% else %}
+                  <td><a href="{% url 'topic_posts' board.pk topic.pk %}" style="text-decoration:
+                          none;">{{ topic.subject }}</a></td>
+                  {% endif %}
+                  <td>{{ topic.original_poster.get_full_name }}</td>
+                  <td>{{ topic.replies }}</td>
+                  <td>{{ topic.views }}</td>
+                  <td>{{ topic.last_updated.date }}</td>
+              </tr>
+              {% endfor %}
+          </tbody>
+          <tfoot class="tfoot-dark"></tfoot>
+      </table>
+
+      {% include 'includes/pagination.html' %}
+    </div>
+
+</div>
+{% endblock %}

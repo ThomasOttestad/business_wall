@@ -1,0 +1,197 @@
+{% extends 'base.html' %}
+{% load bootstrapify %}
+{% load timesheet_tag %}
+{% load static %}
+
+{% block stylesheets %}
+<link rel="stylesheet" href="{% static 'css/timesheet/timesheet.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="d-flex m-4">
+    <div class="mr-2 left-wrapper">
+        <div style="float: left;">
+          <form method="POST">
+            {% csrf_token %}
+            {% for field in calenderform %}
+              {% if field.id_for_label != 'id_worker' %}
+                {{field|bootstrapify_field}}
+              {% endif %}
+            {% endfor %}
+      
+            <input class="btn btn-dark" style="font-size: 15px;" type="submit" value="Select">
+          </form>
+        </div>
+        {% if has_perm %}
+        <div class="card col-2" style="float: left;">
+          <form action="{% url 'edit_timesheet' %}">
+            <button class="btn btn-dark" name="edit_timesheet">Edit timesheets</button>
+          </form>
+        </div>
+        {% endif %}
+    </div>
+    
+    <div class="mr-2 justify-content-center" timesheet>
+      <div>
+        <table class='table table-striped'>
+          <thead class='thead-dark'>
+            <th>Sum</th>
+            <th> Time worked </th>
+            <th> Overtime </th>
+            <th> Evening </th>
+            <th> Weekend </th>
+            <th> Holiday </th>
+            <th colspan='20'>
+          </thead>
+          <tbody>
+            <tr >
+              <td colspan="1"></td>
+              <td>{{sum_duration|convert_hours}}</td>
+              <td>{{sum_overtime|convert_hours}}</td>
+              <td>{{sum_evening|convert_hours}}</td>
+              <td>{{sum_weekend|convert_hours}}</td>
+              <td>{{sum_holiday|convert_hours}}</td>
+              <td colspan="20"></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div>
+        <table class="table table-striped">
+          <thead class="thead-dark">
+                <tr>
+                  <th colspan="3"></th>
+                  <th>{{curr_month}}</th>
+                  <th>{{curr_year}}</th>
+                  <th colspan="8"></th>
+                </tr>
+              <tr>
+                  <th scope="col">Date        </th>
+                  <th scope="col">Times       </th>
+                  <th scope="col">Time worked </th>
+                  <th scope="col">Overtime    </th>
+                  <th scope="col">Evening     </th>
+                  <th scope="col">Weekend     </th>
+                  <th scope="col">Holiday     </th>
+                  <th scope="col">Notes       </th>
+                  <th scope="col"></th>
+              </tr>
+          </thead>
+          <tbody>
+
+              {% for i in time %}
+              <tr name="table-content">
+                  <td name='date'>      {{i.start_time|date:'d M'}}               </td>
+                  <td name='duration'>  {{i.start_time|date:'H:i'}} - {{i.end_time|date:'H:i'}}</td>                              
+                  <td name='duration'>  {{i.time_worked|duration_format}}  </td>
+                  <td name='overtime'>  {{i.overtime|duration_format}} </td>
+                  <td name='evening'>   {{i.evening|duration_format}} </td>
+                  <td name='weekend'>   {{i.weekend|duration_format}} </td>
+                  <td name='holiday'>   {{i.holiday|duration_format}} </td>
+
+                  <td> {{i.note}}</td>
+                  <td style="text-align: left;"><a class="fa fa-edit" type="button" 
+                    style="font-size: small;"  data-id_note="{{i.note}}" 
+                    data-usrid="{{i.id}}" data-toggle="modal" name="edit_note"
+                    data-target="#editNote"></a></td>
+                  </tr>
+              {% endfor %}
+          </tbody>
+          <thead class="thead-dark">
+              <tr>
+                  <th scope="row">Sum</th>
+                  <th colspan='20'></th>
+              </tr>
+          </thead>
+          <tbody>
+            <tr >
+              <td colspan="2"></td>
+              <td>{{sum_duration|convert_hours}}</td>
+              <td>{{sum_overtime|convert_hours}}</td>
+              <td>{{sum_evening|convert_hours}}</td>
+              <td>{{sum_weekend|convert_hours}}</td>
+              <td>{{sum_holiday|convert_hours}}</td>
+              <td colspan="2"></td>
+
+            </tr>
+          </tbody>
+      </table>
+      </div>
+    </div>
+
+    <div class="mr-2 right-wrapper">
+      <div style="float: right;">
+        {% if messages %}
+          {% for error in messages %}
+          <div class="alert alert-warning alert-simissible fade show" role="alert">
+              {{error.errors}}
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          {% endfor %}
+        </ul>
+         {% endif %}
+      </div>
+    </div> 
+</div>
+
+
+<div class="div-modal">
+  <div class="modal fade" id="editNote" role="dialog">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h4 class="modal-title">Update your note</h4>
+        </div>
+        <form method="POST" id="editNoteForm">
+          {% csrf_token %}
+          <div class="modal-body">
+            <table class="table table-active">
+              {% for field in noteForm.visible_fields %}
+                <thead class="thead-dark">
+                  <tr>
+                    <th>{{ field.label_tag }}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td> {{field}}</td>
+                  </tr>
+                </tbody>
+              {% endfor %}
+            </table>
+          </div>
+            <div class="modal-footer">
+              <button  type="submit" class="btn btn-dark" name='save'>Save</button>
+              <button  type="button" class="btn btn-dark" data-dismiss="modal" name='close'>Close</button>
+            </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+
+{% block scripts %}
+<script type="text/javascript">
+  $(function(){
+    $("#editNote").on("show.bs.modal", function (e) {
+      const button = $(e.relatedTarget);
+
+      const modal = $(this);
+      modal.find(".modal-body #id_note").val(button.data("id_note"));
+      var id_button = button.data("usrid")
+      $("#editNoteForm").attr('action', "/timesheet/edit_note/" +  id_button)
+    });
+  })
+</script>
+
+<script>
+  var yourSelect = document.getElementById( "#monthSelect" );
+  alert( yourSelect.options[ yourSelect.selectedIndex ].value )
+</script>
+
+{% endblock %}

@@ -1,0 +1,30 @@
+.card{
+  border-radius: 10px;
+}
+
+.card-img-left{
+  width: 20px;
+}
+
+.block{
+  background: lightgray;
+  border-radius: 10px;
+}
+
+.btn-stamp{
+  padding: 10px 60px;
+  font-size: 20px;
+  border-radius: 10px;
+}
+
+[messageboard] {
+  width: 40%;
+}
+
+[stamping] {
+
+}
+
+.right-wrapper{
+  width: 60%;
+}

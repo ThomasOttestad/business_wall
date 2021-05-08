@@ -1,0 +1,33 @@
+.right-wrapper{
+    width: 20%;
+    background: whitesmoke;
+}
+
+.left-wrapper{
+    width: 20%;
+    background: whitesmoke;
+}
+
+[timesheet] {
+    width: 60%;
+    background: whitesmoke;
+}
+
+.card {
+    background: whitesmoke;
+    border-color: whitesmoke;
+}
+
+textarea {
+    width: 450px;
+    height: 50px;
+}
+
+.table {
+    border: 1px solid grey;
+    border-radius: 10px;
+}
+
+.btn {
+    border-radius: 10px;
+}

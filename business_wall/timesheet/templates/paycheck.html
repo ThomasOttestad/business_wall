@@ -1,0 +1,159 @@
+{% extends 'base.html' %}
+{% load bootstrapify %}
+{% load timesheet_tag %}
+{% load static %}
+
+{% block stylesheets %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.1.2/css/tempusdominus-bootstrap-4.min.css" integrity="sha256-XPTBwC3SBoWHSmKasAk01c08M6sIA5gF5+sRxqak2Qs=" crossorigin="anonymous" />
+{% endblock stylesheets %}
+
+{% block content %}
+<div class="content">
+  <div class="wrapper">
+    <div class="row align-items-center">
+      <div class="col-sm-6">
+        {% if calenderform %}
+          <form method="POST">
+            {% csrf_token %}
+            <div class="row align-items-center">
+
+              {% if user.is_manager %}
+                <div class="col-md-12">
+                  {{calenderform.worker|bootstrapify_field}}
+                </div>
+              {% endif %}
+
+              <div class="col-md-6 col-sm-12">
+                {{calenderform.month|bootstrapify_field}}
+              </div>
+              <div class="col-md-6 col-sm-12">
+                {{calenderform.year|bootstrapify_field}}
+              </div>
+              <div class="col-md-12">
+                <input class="mt-2 btn btn-primary" type="submit" value="Select">
+              </div>
+            </div>
+          </form>
+        {% endif %}
+      </div>
+      
+      {% if estimate is False %}
+        <div class="col-sm-6 xz-sm-mt-2">
+          <form action="{% url 'estimate_paycheck' %}" method="GET">
+            <button class="btn btn-primary" name="estimate_paycheck">Estimate Paycheck</button>
+          </form>
+        </div>
+      {% endif %}
+
+      {% if estimate is True %}
+        <div class="col-sm-6 xz-sm-mt-2">
+          <form action="{% url 'paycheck' %}" method="GET">
+            <button class="btn btn-primary" name="paycheck">Paycheck</button>
+          </form>
+        </div>
+      {% endif %}
+
+      <table class="mt-4 table table-lg">
+        <thead>
+          <tr>
+            <th colspan="1"></th>
+            <th>Basis</th>
+            <th>Quantity</th>
+            <th>Rate</th>
+            <th>Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Hourly Wage</td>
+            <td> {{additional_rate.normal_rate}} </td>
+            <td> {{sum_duration|convert_hours}} </td>
+            <td>{{rate_normal}}</td>
+            <td>{{amount_normal}}</td>
+          </tr>
+          
+          {% if sum_overtime %}
+          <tr>
+            <td>Overtime</td>
+            <td>{{additional_rate.overtime_rate}}</td>
+            <td>{{sum_overtime|convert_hours}}</td>
+            <td>{{rate_overtime}}</td>
+            <td>{{amount_overtime}}</td>
+          </tr>
+          {% endif %}
+
+          {% if sum_weekend %}
+          <tr>
+            <td>Weekend</td>
+            <td>{{additional_rate.weekend_rate}} </td>
+            <td>{{sum_weekend|convert_hours}}</td>
+            <td>{{rate_weekend}}</td>
+            <td>{{amount_weekend}}</td>
+          </tr>
+          {% endif %}
+
+          {% if sum_evening %}
+          <tr>
+            <td>Evening</td>
+            <td>{{additional_rate.evening_rate}}</td>
+            <td>{{sum_evening|convert_hours}}</td>
+            <td>{{rate_evening}}</td>
+            <td>{{amount_evening}}</td>
+          </tr>
+          {% endif %}
+
+          {% if sum_holiday %}
+          <tr>
+            <td>Holiday</td>
+            <td>{{additional_rate.holiday_rate}}</td>
+            <td>{{sum_holiday|convert_hours}}</td>
+            <td>{{rate_holiday}}</td>
+            <td>{{amount_holiday}}</td>
+          </tr>
+          {% endif %}
+
+          <tr>
+            <td>Gross salary</td>
+            <td></td>
+            <td>{{sum_total_time|convert_hours}}</td>
+            <td></td>
+            <td>{{wage}}</td>
+          </tr>
+
+          <tr>
+            <td>Withholding table</td>
+            <td>{{paycheck.taxes}}</td>
+            <td>{{sum_total_time|convert_hours}}</td>
+            <td></td>
+            <td>{{taxes}}</td>
+          </tr>
+
+          <tr>
+            <td>Holiday pay basis</td>
+            <td>{{paycheck.vacation_money_basis}}</td>
+            <td>{{sum_total_time|convert_hours}}</td>
+            <td></td>
+            <td>{{vacation_money_basis}}</td>
+          </tr>
+
+          <tr>
+            <td>Holiday pay basis so far this year</td>
+            <td>{{paycheck.vacation_money_basis}}</td>
+            <td></td>
+            <td></td>
+            <td>{{tot_vac}}</td>
+          </tr>
+
+          <tr>
+            <td>Net salery for payment</td>
+            <td></td>
+            <td>{{sum_total_time|convert_hours}}</td>
+            <td></td>
+            <td>{{paycheck.wage}}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock content %}

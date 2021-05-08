@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+
+{% block content %}
+<div class="content">
+  <nav>
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item">
+        <a href="{% url 'departments' %}">Departments</a>
+      </li>
+      <li class="breadcrumb-item active">
+        {{department}}
+      </li>
+    </ol>
+  </nav>
+  <h1 class="text-dark">{{department}} department</h1>
+  <div class="wrapper">
+    <form method="get">
+      <div class="input-group">
+        <input class="form-control" type="search" name="q" value="{{query}}" placeholder="Search for a member">
+        <div class="input-group-append">
+          <button class="btn btn-primary" type="submit">Search</button>
+        </div>
+      </div>
+    </form>
+    {% if user.is_manager %}
+    <div class="mt-2">
+      <a id="add_user" class="btn btn-primary" href="{% url 'add_user_department' pk=department.pk %}">
+        <i class="fas fa-plus"></i> Add members
+      </a>
+      <a id="roster_edit" class="btn btn-primary" href="{% url 'roster_editor' %}">
+        <i class="fas fa-calendar"></i> Edit roster
+      </a>
+      <a id="update" class="btn btn-primary" href="{% url 'update_department' pk=department.pk %}">
+        <i class="fas fa-edit"></i> Edit department
+      </a>
+      <a id="delete" class="btn btn-danger" href="{% url 'delete_department' pk=department.pk %}">
+        <i class="fas fa-minus"></i> Delete department
+      </a>
+    </div>
+    {% endif %}
+    {% include "member_table.html" with members=members paginator=paginator%}
+  </div>
+</div>
+{% endblock content %}

@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block stylesheets %}
+    <link rel="stylesheet" href="{% static 'css/homepage.css' %}">
+    {% include "calendar/css_template.html" %}
+{% endblock %}
+
+{% block content %}
+<div class="content">
+  <div class="wrapper row">
+    <div class="col-xs-12 col-sm-12 col-md-3 pb-5 pb-lg-0 d-flex flex-column align-items-center">
+      <h1 class="text-dark">Good day {{user}}</h1>
+    </div>
+
+    <div class="col-xs-12 col-sm-12 col-md-4 offset-md-1 pb-3 pb-lg-0 d-flex flex-column align-items-center">
+      <form method="POST" action="/timesheet/stampin/">
+        {% csrf_token %}
+        {% if stampUser.stampedIn == False %}
+        <button type="submit" class="btn btn-dark">
+          <h1><i class="fas fa-door-closed"></i> Clock in</h1>
+        </button>
+        {% else %}
+      </form>
+      <form method="POST" action="/timesheet/stampout/">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-info">
+          <h1><i class="fas fa-door-open"></i> Clock out</h1>
+        </button>
+        {% endif %}
+      </form>
+      <p>Check your <a class="text-primary" href="{% url 'timesheet' %}">timesheet</a></p>
+    </div>
+
+    <div class="col-xs-12 col-sm-12 col-md-3 offset-md-1 d-flex flex-column align-items-center">
+      <ul class="list-unstyled text-dark" style="font-size: 1.5rem;">
+        {% for daily_stamps in time %}
+        <li>
+          <span>{{daily_stamps.start_time|date:'H:i'}} - {{daily_stamps.end_time|date:'H:i'}}</span>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  <div class="wrapper row mt-4">
+    <div class="col-xl-12 pb-2" id="calendar"></div>
+  </div>
+
+  {% if posts %}
+  <div class="wrapper row mt-4">
+    <div class="col-xl-12">
+      <a href="{% url 'board_home' %}">
+        <h2 class="text-dark">Pinned messages</h2>
+      </a>
+      <div class="pinned-posts mt-4">
+      {% for post in posts %}
+        <div class="pinned-post">
+          <a href="{% url 'topic_posts' post.topic.board.pk post.topic.pk %}">
+            <h4 class="text-primary">{{post.topic.subject}}</h4>
+          </a>
+          <p class="overflow-hidden line-clamp">{{ post.message }}</p>
+          <small class="text-muted">{{ post.topic.original_poster.get_full_name }} {{post.created_at}}</small>
+        </div>
+        <hr>
+      {% endfor %}
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+  {% include "calendar/js_template.html" %}
+  <script src="{% static "js/calendar/readonly.js" %}" type="text/javascript" charset="utf-8"></script>
+  <script src="{% static "js/forms/validation.js" %}" type="text/javascript" charset="utf-8"></script>
+  <script type="text/javascript">
+  currentUser = {{user.pk}};
+  document.addEventListener('DOMContentLoaded', function() {
+    const calendarEl = document.getElementById('calendar');
+    var calendar = new ReadOnlyCalendar(calendarEl, {
+      events: "{{eventUrl}}",
+      plugins: ['list', "bootstrap"],
+      defaultView: 'listWeek',
+      weekNumber: true,
+      header: {
+        left: 'prev,next',
+        center: 'title',
+        right: 'today'
+      },
+      height: "auto",
+    });
+    calendar.render();
+
+    // Handle popover clicks outside of popover
+    $('body').on('click', function (e) {
+      $('[data-trigger="click"]').each(function () {
+          //the 'is' for buttons that trigger popups
+          //the 'has' for icons within a button that triggers a popup
+          if (!$(this).is(e.target) && $(this).has(e.target).length === 0 && $('.popover').has(e.target).length === 0) {
+              $(this).popover('hide');
+          }
+      });
+    });
+  });
+  </script>
+{% endblock %}

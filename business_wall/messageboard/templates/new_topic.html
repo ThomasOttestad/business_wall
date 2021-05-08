@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% load bootstrapify %}
+{% block title %} Boards {% endblock %}
+{% block content %}
+<div class="content">
+  <ol class="breadcrumb mb-4">
+    <li class="breadcrumb-item"><a href="{% url 'board_home' %}">Boards</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'board_topics' board.pk %}">{{ board.name }}</a></li>
+    <li class="breadcrumb-item active">New Topic</li>
+  </ol>
+
+  <div class="wrapper">
+    <form method="post" novalidate>
+      {% csrf_token %}
+
+      {% for field in form %}
+        {{field|bootstrapify_field}}
+      {% endfor %}
+
+      <button type="submit" class="btn btn-success mt-3" name="post">
+        <i class="fas fa-plus-square"></i> Post Topic
+      </button>
+    </form>
+  </div>
+</div>
+{% endblock %}

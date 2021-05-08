@@ -1,0 +1,22 @@
+<table class="table">
+  <thead>
+    <tr>
+      <th>Shift</th>
+      <th>Trader</th>
+      <th>recipient</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for trade in trades %}
+      <tr>
+        {% if should_answer %}
+          <td><a href="{% url 'answer' tid=trade.pk %}">{{trade.shift.duration_str}}</a></td>
+        {% else %}
+          <td>{{trade.shift.duration_str}}</td>
+        {% endif %}
+        <td>{{trade.trader}}</td>
+        <td>{{trade.recipient}}</td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>

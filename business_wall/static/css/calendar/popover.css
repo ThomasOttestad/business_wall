@@ -1,0 +1,9 @@
+.popover {
+  min-width: 200px;
+}
+.popover-header {
+  text-align: center;
+}
+.popover-duration {
+  margin-bottom: 10px;
+}

@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+{% load bootstrapify %}
+{% load static %}
+{% load user_util %}
+
+{% block stylesheets %}
+    <link rel="stylesheet" href="{% static 'css/homepage.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="content">
+  <ol class="breadcrumb align-items-center mb-4">
+    <li class="breadcrumb-item active">Profile</li>
+  </ol>
+
+  <div class="wrapper">
+    <div class="row align-items-start">
+      <div class="col-xs-12 col-sm-2">
+        <img class="img-thumbnail" height="200px" src="{{user|get_avatar}}" alt="Profile picture">
+      </div>
+      <div class="col-xs-6 col-sm-5">
+        <div class="d-flex flex-column">
+          <h3>
+            {{user.get_full_name}}
+            {% if stampUser.stampedIn %}
+            <span class="dot-green"></span>
+            {% else %}
+            <span class="dot-red"></span>
+            {% endif %}
+          </h3>
+          <div class="mt-5">
+            <h4>General information:</h4>
+            <table style="width: 100%;">
+              <tr>
+                <td class="text-muted">E-mail</td>
+                <td>{{user.email}}</td>
+              </tr>
+              <tr>
+                <td class="text-muted">Position</td>
+                <td>{{user|get_position}}</td>
+              </tr>
+              <tr>
+                <td class="text-muted">Departments</td>
+                <td>
+                  {% include "departments_dropdown.html" with departments=user|get_departments %}
+                </td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div class="col-xs-6 col-sm-5">
+        <div class="row">
+          <div class="col-xs-6 col-sm-12 col-md-6">
+            <ul class="list-unstyled">
+              <li><a href="{% url 'upload' %}">Upload document</a></li>
+              <li class="mt-2"><a href="{% url 'documents' %}">View documents</a></li>
+              <li class="mt-2"><a href="{% url 'change' %}">Change profile picture</a></li>
+              <li class="mt-2"><a href="{% url 'password_change' %}">Change password</a></li>
+              <li class="mt-2"><a href="{% url 'paycheck' %}">Paycheck</a></li>
+            </ul>
+          </div>
+          <div class="col-xs-12 col-sm-6">
+            <ul class="list-unstyled">
+              <li>
+                <a href="{% url 'pending' %}">
+                  Pending trades<span class="badge badge-light">{{user.pending_trades|length}}</span>
+                </a>
+              </li>
+              <li class="mt-2">
+                <a href="{% url 'requested' %}">
+                  Requested trades<span class="badge badge-light">{{user.requested_trades|length}}</span>
+                </a>
+              </li>
+              <li class="mt-2">
+                <a href="{% url 'declined' %}">Declined trades</a>
+              </li>
+              <li class="mt-2">
+                <a href="{% url 'accepted' %}">Accepted trades</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% if posts %}
+    <div class="row mt-4">
+      <div class="col-xl-12">
+        <h2>Your messages</h2>
+        <div class="pinned-posts mt-4">
+        {% for post in posts %}
+          <div class="pinned-post">
+            <a href="{% url 'topic_posts' post.topic.board.pk post.topic.pk %}">
+              <h4 class="text-primary">{{post.topic.subject}}</h4>
+            </a>
+            <p class="overflow-hidden line-clamp">{{ post.message }}</p>
+            <small class="text-muted">{{ post.topic.original_poster.get_full_name }} {{post.created_at}}</small>
+          </div>
+          <hr>
+        {% endfor %}
+        </div>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock content %}
+
+{% block njaa %}
+
+<div class="container py-4">
+    <div class="row">
+        <div class="col-12 col-sm-3">
+            <div class="media">
+              <img width="500px" src="{{ user|get_avatar }}" class="w-50 d-flex align-self-center" alt="Profilepicture">
+                    <div class="media-body">
+                        <h5 class="mt-0">
+                        {{ user.get_full_name }}
+                        {% if stampUser.stampedIn == False %}
+                        <span style="width:8px;height:8px;border-radius:50%;background-color:red;display:inline-block;"></span>
+                        {% endif %}
+
+                        {% if stampUser.stampedIn == True %}
+                        <span style="width:8px;height:8px;border-radius:50%;background-color:green;display:inline-block;"></span>
+                        {% endif %}
+                        </h5>
+                    </div>
+                </div>
+            </div>
+        </div>
+    <hr>
+    <div class="row">
+        <div class="col-12 col-md-3">
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'upload' %}">Document</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'change' %}"> Change user info</a>
+                </li>
+                <li class="nav-item">
+                        <a class="nav-link" href="{% url 'paycheck' %}"> Paycheck</a>
+            </ul>
+        </div>
+    <div class="col-12 col-md-9">
+        <div class="card-row block p-2" yellow>
+            <a class="test" href="{% url 'board_home' %}">
+                <div class="title">Your topics</div>
+            </a>
+                {% for post in posts %}
+                    <div class="card mt-3">
+                        <a href="{% url 'topic_posts' post.topic.board.pk post.topic.pk %}">
+                            <div class="card-header">{{post.topic.subject}}</div>
+                        </a>
+                    <div class="card-body" >{{ post.message }}</div>
+                        <div class="card-footer text-muted">
+                            <img class="card-img-left" src="{{ post.topic.original_poster|get_avatar }}" alt="Card image cap">
+                            Created by: {{ post.topic.original_poster.get_full_name }} {{post.created_at}}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

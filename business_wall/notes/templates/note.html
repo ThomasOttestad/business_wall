@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+{% load bootstrapify %}
+{% load static %}
+
+{% block content %}
+<div class="p-2" style="text-align: center;">
+
+    <h2>Notes</h2>
+    <form method="POST" action="/notes/add/">
+        {% csrf_token %}
+        {{form.as_p}}
+    <input type="submit"> 
+    </form>
+</div>
+
+    {% if list %}
+    <div class="card-columns" style="margin-left: 10px; margin-right: 10px;">
+        {% for item in list %}
+        <div class="card p-3" style="text-align: center;">
+            <div class="card-body">
+                <a type="button" 
+                      style="font-size: small;" data-id_text="{{item.text}}" data-id_title="{{item.title}}" 
+                      data-usrid="{{item.id}}" data-toggle="modal" 
+                      data-target="#myEdit">Note</a>
+                </button>
+                <p class="item-text">{{item.note}}</p>
+                
+                </div>
+                    <div class="card-footer">
+                        <small class="text-muted">By {{item.created_by}} </small>
+                        <small class="text-muted">Created {{item.date}}</small>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <div class="div-modal"></div>
+    <div class="modal fade" id="myEdit" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit notes</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">X</button>
+                </div>
+                
+                <form method="POST" action="/notes/edit/" id="editForm">
+                    {% csrf_token %}
+                    <div class="modal-body">
+                        {{ form.non_field_errors|bootstrapify_errors }}
+                        <table class="table table-active">
+                            {% for field in form %}
+                            <thead class="thead-dark">
+                                <tr>
+                                    <th>{{ field.label_tag }}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            <tr>
+                                <td>{{field}}</td>
+                            </tr>
+                            </tbody>
+                            {% endfor %}
+                        </table>
+                    </div>
+            <div class="modal-footer">
+              <button  type="submit" class="btn btn-dark">Save</button>
+              <button  type="button" class="btn btn-dark" data-dismiss="modal">Close</button>
+            </div>
+        </form>
+            </div>
+        </div>
+    </div>
+
+    
+    
+    {% endblock %}
+    
+    {% block scripts %}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js" integrity="sha256-4iQZ6BVL4qNKlQ27TExEhBN1HFPvAvAMbFavKKosSWQ=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.1.2/js/tempusdominus-bootstrap-4.min.js" integrity="sha256-z0oKYg6xiLq3yJGsp/LsY9XykbweQlHl42jHv2XTBz4=" crossorigin="anonymous"></script>
+
+    <script type="text/javascript">
+    $(function(){
+        $("#myEdit").on("show.bs.modal", function (e) {
+            const button = $(e.relatedTarget);
+            const modal = $(this);
+            modal.find(".modal-body #id_title").val(button.data("id_title"));
+            modal.find(".modal-body #id_text").val(button.data("id_text"));
+            var id_button = button.data("usrid")
+        
+            $("#editForm").attr('action', "/notes/edit/" +  id_button)
+        });
+    })
+    </script>
+    {% endblock %}
+
+

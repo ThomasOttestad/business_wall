@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="content">
+  <div class="wrapper">
+    <form method="get">
+      <div class="input-group">
+        <input class="form-control" type="search" name="q" value="{{query}}" placeholder="Search for a department">
+        <div class="input-group-append">
+          <button class="btn btn-primary" type="submit">Search</button>
+        </div>
+      </div>
+    </form>
+    <a id="new_department" class="btn btn-primary mt-2" href="{% url 'new_department' %}">
+      <i class="fas fa-plus"></i> New department
+    </a>
+    <table class="table table-sm mt-2" id="department_table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Manager</th>
+          <th>Members</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for department in departments %}
+          <tr>
+            <th><a href="{% url 'department_home' did=department.pk %}">{{department}}</a></th>
+            <td>{{department.manager.get_full_name}}</td>
+            <td>
+              {{department.get_members|length}}
+
+            </td>
+            <td>
+              {% if user.is_manager %}
+              <a id="roster_edit" class="btn btn-primary" href="{% url 'roster_editor' %}" data-toggle="tooltip" title="Edit roster">
+                <i class="fas fa-calendar"></i>
+              </a>
+              <a id="update" class="btn btn-primary" href="{% url 'update_department' pk=department.pk %}" data-toggle="tooltip" data-placement="bottom" title="Edit department">
+                <i class="fas fa-edit"></i>
+              </a>
+              <a id="delete" class="btn btn-danger" href="{% url 'delete_department' pk=department.pk %}" data-toggle="tooltip" data-placement="bottom" title="Delete department">
+                <i class="fas fa-minus"></i>
+              </a>
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <div class="mt-2">
+      {% include "pagination.html" with paginator=paginator currentPage=departments %}
+    </div>
+  </div>
+
+</div>
+{% endblock content %}

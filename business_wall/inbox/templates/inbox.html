@@ -1,0 +1,369 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% load user_util %}
+
+{% block stylesheets %}
+    <link rel="stylesheet" href="{% static 'css/inbox.css' %}">
+{% endblock %}
+
+<!-- Content -->
+{% block content %}
+    <div class="content mt-2">
+        <div class="d-flex justify-content-around">
+            <div class="d-flex flex-column">
+                <!-- Link to your profile & new message button -->
+                <div class="wrapper border mb-2">
+                    <h1 class="text-dark" style="font-size: 2vw; text-align: center;">
+                        <div class="profilePicture" >
+                            <img class="img-thumbnail" width="80vw" src="{{user|get_avatar}}" alt="Profile picture">
+                        </div>
+                        {{user.get_full_name}}
+                        <p style="font-size: 1vw;">{{user.email}}</p>
+                    </h1>
+                    <button type="button" id="openNewMessage" class="btn btn-dark btn-block" data-toggle="modal" data-target="#aModal">
+                        Compose Message
+                    </button>
+                </div>
+                <!-- Pills here -->
+                <div class="wrapper border">
+                    <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+                        <a class="nav-link active" id="v-pills-inbox-tab" data-toggle="pill" href="#v-pills-inbox" role="tab" aria-controls="v-pills-inbox" aria-selected="false">Inbox</a>
+                        <a class="nav-link" id="v-pills-sent-tab" data-toggle="pill" href="#v-pills-sent" role="tab" aria-controls="v-pills-sent" aria-selected="false">Sent</a>
+                        <a class="nav-link" id="v-pills-trash-tab" data-toggle="pill" href="#v-pills-trash" role="tab" aria-controls="v-pills-trash" aria-selected="false">Trash</a>
+                        <a class="nav-link" id="v-pills-searchColleagues-tab" data-toggle="pill" href="#v-pills-searchColleagues" role="tab" aria-controls="v-pills-searchColleagues" aria-selected="false">Colleagues</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- New message window, hidden on load. Appears in the center of the screen -->
+            <div id="draggable" class="card" style="position: absolute; text-align: center; width: 500px; display: none; z-index: 1;">
+                <div class="card-header text-white" id="draggableheader" style="cursor: move;">
+                    <span class="pull-right clickable close-icon" data-effect="fadeOut" style="float: right;"><i class="fa fa-times"></i></span>
+                    <h4>Compose Message</h4>
+                    <a class="text-white" href="#" data-toggle="tooltip" title="Write to several users? Separate their emails by ';'. Example: 'john@businnes.no;james@business.no'">Help?</a>
+                </div>
+                <div class="card-body">
+                    <form id="sendTest" method="POST" action="" autocomplete="off">
+                        {% csrf_token %}
+                        <div>
+                            <div class="wrapper sendError" id="sendErr" style="display: none;"></div>     
+                            <div>{{ form.multiple_receivers|as_crispy_field }} </div>
+                            <div>{{ form.msg_title|as_crispy_field }}</div>
+                            <div>{{ form.msg_content|as_crispy_field }}</div>
+                        </div>
+                        <input class="mb-2" type="submit" value="Send" style="float: right;">
+                    </form> 
+                </div>
+            </div>
+
+            <!-- Inbox view / message view -->
+            <div class="wrapper border w-75">
+                <div class="tab-content" id="v-pills-tabContent">
+                    <div class="tab-pane fade show active" id="v-pills-inbox" role="tabpanel" aria-labelledby="v-pills-new_message-tab">
+                        <h1 class="container well" style="text-align: center;">
+                            Inbox
+                        </h1>
+                        <div id="accordionInbox">
+                            {% for ele in message %}
+                            {% if ele.deleted == False %}
+                                <div class="card">
+                                    <div class="card-header" id="inboxMsg_{{ele.id}}" data-toggle="collapse" data-target="#collapseInbox{{ele.id}}" aria-expanded="true" aria-controls="collapseInbox{{ele.id}}">
+                                        <div class="d-flex justify-content-between text-white">
+                                            <p class="">{{ele.sender.get_full_name}}</p>
+                                            <p class="view-message ">{{ele.get_short_title}}</p>
+                                            <p class="view-message ">{{ele.sent}}</p>
+                                            <button class="email_delete btn-light btn" id="doNotShowCollapsed" target="_blank" data-usrid="{{ele.id}}">Delete</button>
+                                        </div>
+                                    </div>
+                                    <div id="collapseInbox{{ele.id}}" class="collapse" aria-labelledby="inboxMsg_{{ele.id}}" data-parent="#accordionInbox">
+                                        <div class="card-body" id="emailBody">
+                                            <div>
+                                                <h5>From: {{ele.sender.email}}</h5>
+                                                <h5>Title: {{ele.msg_title}}</h5>
+                                            </div>
+                                            <div class="wrapper border">
+                                                {% if not ele.msg_content %}
+                                                    <h5>Message:</h5>
+                                                    <p >*Missing Content*</p>
+                                                {% else %}
+                                                    <p>{{ele.msg_content}}</p>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+        
+                    <!-- Sent messages -->
+                    <div class="tab-pane fade p-2" id="v-pills-sent" role="tabpanel" aria-labelledby="v-pills-new_message-tab">
+                        <h1 class="container well" style="text-align: center;">
+                            Sent
+                        </h1>
+                       <div id="accordion">
+                        {% for ele in sent_message %}
+                        {% if ele.deleted == False %}
+                            <div class="card">
+                                <div class="card-header" id="sentMsg_{{ele.id}}" data-toggle="collapse" data-target="#collapseOne{{ele.id}}" aria-expanded="true" aria-controls="collapseOne{{ele.id}}">
+                                    <div class="d-flex justify-content-between text-white">
+                                        <p>{{ele.receiver.get_full_name}}</p>
+                                        <p class="view-message">{{ele.msg_title}}</p>
+                                        <p class="view-message">{{ele.sent}}</p>
+                                    </div>
+                                </div>
+                                <div id="collapseOne{{ele.id}}" class="collapse" aria-labelledby="sentMsg_{{ele.id}}" data-parent="#accordion">
+                                    <div class="card-body" id="emailBody">
+                                        <div>
+                                            <h5>From: {{ele.sender.email}}</h5>
+                                            <h5>To: {{ele.receiver}}</h5>
+                                            <h5>Title: {{ele.msg_title}}</h5>
+                                        </div>
+                                        <div class="wrapper border">
+                                            {% if not ele.msg_content %}
+                                                <h5>Message:</h5>
+                                                <p >*Missing Content*</p>
+                                            {% else %}
+                                                <p>{{ele.msg_content}}</p>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+                    </div>
+
+                    <!-- Trash -->
+                    <div class="tab-pane fade p-2" id="v-pills-trash" role="tabpanel" aria-labelledby="v-pills-trash-tab">
+                        <h1 class="container well" style="text-align: center;">
+                            Trash
+                        </h1>
+                        <div class="mb-2" style="text-align: center;">
+                            Cant find email? Try reloading: <button id="reloadPage" class="btn btn-dark">Reload</button>
+                        </div>
+                        <div id="accordionTrash">
+                            {% for ele in message %}
+                            
+                            {% if ele.deleted == True and ele.receiver == user %}
+                                <div class="card">
+                                    <div class="card-header" id="trash_{{ele.id}}" data-toggle="collapse" data-target="#collapseTrash{{ele.id}}" aria-expanded="true" aria-controls="collapseTrash{{ele.id}}">
+                                        <div class="d-flex justify-content-between text-white">
+                                            <p>{{ele.sender.get_full_name}}</p>
+                                            <p class="view-message">{{ele.get_short_title}}</p>
+                                            <p class="view-message">{{ele.sent}}</p>
+                                            <button class="email_undelete btn-light btn" id="trashEmailButton" target="_blank" data-usrid="{{ele.id}}">Retrieve</button>
+                                        </div>
+                                    </div>
+                                    <div id="collapseTrash{{ele.id}}" class="collapse" aria-labelledby="trash_{{ele.id}}" data-parent="#accordionTrash">
+                                        <div class="card-body" id="emailBody">
+                                            <div>
+                                                <h5>From: {{ele.sender.email}}</h5>
+                                                <h5>To: {{ele.receiver}}</h5>
+                                                <h5>Title: {{ele.msg_title}}</h5>
+                                            </div>
+                                            <div class="wrapper border">
+                                                {% if not ele.msg_content %}
+                                                    <h5>Message:</h5>
+                                                    <p >*Missing Content*</p>
+                                                {% else %}
+                                                    <p>{{ele.msg_content}}</p>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Search Colleagues -->
+                    <div class="tab-pane fade p-2" id="v-pills-searchColleagues" role="tabpanel" aria-labelledby="v-pills-searchColleagues">
+                        <h1 class="container well" style="text-align: center;">
+                            Colleagues
+                        </h1>
+                        <div class="d-flex flex-column">
+                            <table class="table">
+                                <thead>
+                                  <tr>
+                                    <th scope="col">Name</th>
+                                    <th scope="col">Email</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                {% for user in users %}
+                                  <tr>
+                                    <th scope="row">{{user.get_full_name}}</th>
+                                    <td>{{user.email}}</td>
+                                  </tr>
+                                {% endfor %}
+                                </tbody>
+                              </table>
+                        </div>
+                    </div>
+            </div>
+        </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+<!-- Scripts -->
+{% block scripts %}
+
+<script>
+    $('#sendTest').submit(function(e){
+        $.post('send_message/', $(this).serialize(), function(data){
+            if ((JSON.parse(data).message) == '200'){
+                location.reload();
+            }
+            else{
+                $('.sendError').html(JSON.parse(data).message);
+                document.getElementById("sendErr").style.display = "block";
+            }
+        });
+    e.preventDefault();
+});
+</script>
+
+<!-- Reloads page -->
+<script>
+    $('#reloadPage').on('click', function(){
+        location.reload();
+    });
+</script>
+
+<!-- Separate JS works like this:  -->
+<script src="{% static "js/inbox/testbox.js" %}" type="text/javascript" charset="utf-8"></script>
+
+<!-- Closes the 'new message' div with a fadeout -->
+<script>
+    $('.close-icon').on('click',function() {
+        $(this).closest('.card').fadeOut();
+      })
+</script>
+
+<!-- Wait for site to load completely before making window draggable -->
+<script>
+    document.addEventListener("readystatechange", function(){
+        if (document.readyState == 'complete'){
+            $('[data-toggle="tooltip"]').tooltip();
+            init();
+        }
+    });
+</script>
+
+<!-- Opens new message window on button click -->
+<script>
+    $('#openNewMessage').on('click', function(){
+        document.getElementById("draggable").style.display = "block";
+    });
+</script>
+
+<!-- Moves the Div when dragging with mouse -->
+<script>
+    function init(){
+        console.log("Page loaded");
+        dragDiv(document.getElementById("draggable"));
+    
+        function dragDiv(elem){
+            var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+            // Checks for header, if not use whole div to drag
+            if (document.getElementById(elem.id + "header")){
+                document.getElementById(elem.id + "header").onmousedown = dragMouseClick;
+            }
+            else{
+                elem.onmousedown = dragMouseClick;
+            }
+
+            function dragMouseClick(e){
+                e = e || window.event;
+                e.preventDefault();
+
+                // Mouse pos on click
+                pos3 = e.clientX;
+                pos4 = e.clientY;
+                document.onmouseup = closeDragElement;
+                // Called whenever cursor moves
+                document.onmousemove = elementDrag;
+            }
+
+            function elementDrag(e){
+                e = e || window.event;
+                e.preventDefault();
+                // Calc new pos of cursor
+                pos1 = pos3 - e.clientX;
+                pos2 = pos4 - e.clientY;
+                pos3 = e.clientX;
+                pos4 = e.clientY;
+                // Set new pos of div
+                elem.style.top = (elem.offsetTop - pos2) + "px";
+                elem.style.left = (elem.offsetLeft - pos1) + "px";
+            }
+            // Stops moving the div when mouse is released
+            function closeDragElement(){
+                document.onmouseup = null;
+                document.onmousemove = null;
+            }
+        }
+    }
+</script>
+
+    <!-- Removes a message, but still a bit wonky. Need to fix
+    issue where only main row gets deleted(and not collapsed) -->
+    <!-- Del denne opp i en for delete, og en for sletting fra table/ellerhvadeter -->
+    <script type="text/javascript" charset="utf-8">
+        $('.email_delete').on('click', function(){
+            let confirmation = confirm("Are you sure you want to delete this Email?");
+            if (confirmation) {
+                let object_id = $(this).attr('data-usrid');
+                var closestCard = $(this).closest('.card');
+                $.ajax({
+                    url: "/inbox/delete_message/" + object_id,
+                    type: "POST",
+                    beforeSend: function(xhr) {
+                        xhr.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
+                    },
+                    success: function(response){
+                        if (response["success"]){
+                            closestCard.remove();
+                        }
+                        else{
+                            console.log("not successfull");
+                        }
+                    },
+                    error: function (response) {
+                        console.log(response)
+                    }
+                });
+            }
+        });
+    </script>
+
+    <!-- Retrieves mail from trash. Should change 'delete'-button aswell -->
+    <script type="text/javascript" charset="utf-8">
+        $('.email_undelete').on('click', function(){
+            let object_id = $(this).attr('data-usrid');
+            var closestCard = $(this).closest('.card');
+            $.ajax({
+                url: "/inbox/undelete_message/" + object_id,
+                type: "POST",
+                beforeSend: function(xhr) {
+                    xhr.setRequestHeader("X-CSRFToken", "{{ csrf_token }}");
+                },
+                success: function(response){
+                    if (response["success"]){
+                        closestCard.remove();
+                    }
+                },
+                error: function (response) {
+                    console.log(response)
+                }
+            });
+        });
+    </script>
+{% endblock %}

@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="content">
+  <h1>Colleagues</h1>
+  <div class="wrapper">
+    <form method="get">
+      <div class="input-group">
+        <input class="form-control" type="search" name="q" value="{{query}}" placeholder="Search for a member or department">
+        <div class="input-group-append">
+          <button class="btn btn-primary" type="submit">Search</button>
+        </div>
+      </div>
+    </form>
+    <div class="mt-2">
+      {% include "member_table.html" with members=colleagues paginator=paginator%}
+    </div>
+  </div>
+</div>
+
+{% endblock content %}

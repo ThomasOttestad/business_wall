@@ -1,0 +1,31 @@
+:root{
+    --lightblue: #265691;
+    --blue: #0C4891;
+    --lightbrown: #915E00;
+    --darkbrown: #45300B;
+}
+
+/* Navigation bar on the left */
+.nav-pills > .nav-link.active {
+    background-color: var(--blue); 
+}
+
+.nav-link{
+    color: black;
+}
+
+.table-hover tbody tr:hover td, .table-hover tbody tr:hover th {
+    background-color: #265691;
+}
+
+.card-header{
+    background-color: var(--blue);
+}
+
+#openNewMessage{
+    background-color: var(--blue);
+}
+
+#emailBody{
+    background-color: lightgray;
+}

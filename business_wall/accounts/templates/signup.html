@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% load bootstrapify %}
+
+{% block title %} Sign up{% endblock %}
+
+{% block header %}
+{% include "minimal_header.html" %}
+{% endblock header %}
+
+{% block content %}
+
+<div class="content">
+  <div class="d-flex justify-content-center">
+    {% if validtoken or not tokens %}
+    <div>
+      <h1>Sign up!</h1>
+      <form method="post">
+        {% csrf_token %}
+        {{ form.non_field_errors|bootstrapify_errors }}
+        {% for field in form %}
+        {{ field|bootstrapify_field }}
+        {% endfor %}
+        <button class="btn btn-primary" type="submit">Sign up!</button>
+      </form>
+    </div>
+    {% else %}
+    <div>
+      <h1>Invalid signup link.</h1>
+      <p>
+        The link has expired or it does not exist.
+         Please request a new link from your employer.
+      </p>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

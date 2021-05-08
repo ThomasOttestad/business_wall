@@ -1,0 +1,16 @@
+{% if departments|length == 1 %}
+{{departments.0}}
+{% else %}
+  {% if departments|length > 1 %}
+  <div class="dropdown">
+    <a href="#" class="dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+      {{departments.0}}
+    </a>
+    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+      {% for department in departments %}
+      <div class="dropdown-item">{{department}}</div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+{% endif %}

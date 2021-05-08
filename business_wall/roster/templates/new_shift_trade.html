@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% load bootstrapify %}
+
+{% block content %}
+<div class="container">
+  <h1>Trade shift: <span id="time"></span></h1>
+  <form id="new_trade" method="post">
+    {% csrf_token %}
+    {{form.non_field_errors|bootstrapify_errors}}
+    {% for field in form %}
+        {{field|bootstrapify_field}}
+    {% endfor %}
+    <a class="btn btn-secondary" href="{% url 'calendar' %}" type="button" name="Cancel">Cancel</a>
+    <button class="btn btn-primary" type="submit">Submit</button>
+  </form>
+</div>
+{% endblock content %}
+
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment-with-locales.min.js" integrity="sha256-AdQN98MVZs44Eq2yTwtoKufhnU+uZ7v2kXnD5vqzZVo=" crossorigin="anonymous"></script>
+<script type="text/javascript">
+  const start = moment("{{shift.start.isoformat}}");
+  const end = moment("{{shift.end.isoformat}}");
+
+  let timeStr = start.format("DD MMM HH:mm");
+  if (start.month() === end.month() && start.date() === end.date()) {
+    timeStr += `-${end.format("HH:mm")}`;
+  } else {
+    timeStr += `-${end.format("DD MMM HH:mm")}`;
+  }
+  $("#time").text(timeStr);
+
+</script>
+{% endblock scripts %}

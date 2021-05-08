@@ -1,0 +1,5 @@
+Your employer at {{company}} has sent you an account registration
+invite {{url}}.
+
+The link will be active for 3 days. In case the link has expired, please contact
+your employer.

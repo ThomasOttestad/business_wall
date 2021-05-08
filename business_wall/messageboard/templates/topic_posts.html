@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load user_util %}
+
+{% block title %} Topic Posts {% endblock %}
+{% block content%}
+
+<div class="content">
+    <div class=" nav-container">
+        <ol class="breadcrumb mb-4">
+            <li class="breadcrumb-item"><a href="{% url 'board_home' %} " style="text-decoration: none;">Boards</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'board_topics' topic.board.pk %}"
+                    style="text-decoration: none;">{{ topic.board.name }}</a>
+            </li>
+            <li class="breadcrumb-item active">{{ topic.subject }}</li>
+        </ol>
+    </div>
+
+    {% for post in posts %}
+    {% if not post.reply %}
+    <div class="card mb-2 p-3 mb-5 bg-white border-none rounded">
+        <!-- <div class=" card-header text-white bg-dark py-3 px-3"></div> -->
+        <div class="card-body p-3">
+            <div class="row">
+                <div class="col-2">
+                    <img src="{% static 'images/avatar.png' %}" alt="{{ post.created_by.get_full_name }}" class="w-50 "><br>
+                    <small class="text-muted">{{ post.created_by.get_full_name }}</small><br>
+                    <small class="text-muted">{{ post.created_at.date }}</small><br>
+                    <small class="text-muted">{{ post.created_at.time }}</small>
+                </div>
+                <div class="col-10">
+                    <div class="row mb-3">
+                        <div class="col-12 mt-3">
+                            <strong style="font-size: 130%;">{{ topic.subject }}</strong>
+                        </div>
+                    </div>
+                    <p style="margin-top: 3%;" name="messages">{{ post.message }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="card-footer p-3 bg-white rounded">
+            <a href=" {% url 'reply_topic' topic.board.pk topic.pk %}" class="btn btn-primary btn-sm" role="button"
+                name="reply">
+                <i class="fas fa-comment ml-2"></i> Comment
+            </a>
+
+            {% if post.created_by == user %}
+            <a href="{% url 'edit_post' post.topic.board.pk post.topic.pk post.pk %}" class="btn btn-primary btn-sm "
+                role="button" name="editbutton">Edit
+                <i class="fas fa-edit ml-2"></i>
+            </a>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+    {% endfor %}
+
+    {% if posts|length > 1 %}
+        <div class="mt-2 mb-4">
+          <h4>{{posts|length|add:"-1"}} replies</h4>
+        </div>
+    {% endif %}
+
+
+    {% for post in posts %}
+    {% if post.reply %}
+    <div class="card p-3 mb-4 bg-white rounded">
+        <div class="card-body p-3">
+            <div class="row">
+                <div class="col-2">
+                    <img src="{% static 'images/avatar.png' %}" alt="{{ post.created_by.get_full_name }}" class="w-50"><br>
+                    <small class="text-muted">{{ post.created_by.get_full_name }}</small><br>
+                    <small class="text-muted">{{ post.created_at.date }}</small><br>
+                    <small class="text-muted">{{ post.created_at.time }}</small>
+                </div>
+                <div class="col-10">
+                    <p style="margin-top: 3%;" name="messages">{{ post.message }}</p>
+                </div>
+            </div>
+        </div>
+        {% if post.created_by == user %}
+        <div class="card-footer p-3 bg-white rounded">
+              <a href="{% url 'edit_post' post.topic.board.pk post.topic.pk post.pk %}" class="btn btn-primary btn-sm "
+                role="button" name="editbutton">Edit
+                <i class="fas fa-edit ml-2"></i>
+            </a>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+    {% endfor %}
+
+    <!-- {% include 'includes/pagination.html' %} -->
+
+</div>
+
+{% endblock %}

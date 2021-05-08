@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+
+{% block title %} Boards {% endblock %}
+{% block content%}
+<div class="content">
+    <ol class="breadcrumb mb-4">
+        <li class="breadcrumb-item"><a href="{% url 'board_home' %}">Boards</a></li>
+        <li class="breadcrumb-item"><a
+                href="{% url 'board_topics' post.topic.board.pk %}">{{ post.topic.board.name }}</a></li>
+        <li class="breadcrumb-item"><a
+                href="{% url 'topic_posts' post.topic.board.pk post.topic.pk %}">{{ post.topic.subject }}</a></li>
+        <li class="breadcrumb-item active">Edit post</li>
+    </ol>
+
+    <form method="post" class="mb-4" novalidate>
+        {% csrf_token %}
+        {% load widget_tweaks %}
+
+        {% for field in form %}
+        <div class="form-group">
+            {{ field.label_tag }}
+
+            {% if form.is_bound %}
+            {% if field.errors %}
+            {% render_field field class="form-control is-invalid" %}
+            {% for error in field.errors %}
+            <div class="invalid-feedback">
+                {{ error }}
+            </div>
+            {% endfor %}
+            {% else %}
+            {% render_field field class="form-control is-valid" %}
+            {% endif %}
+            {% else %}
+            {% render_field field class="form-control" %}
+            {% endif %}
+
+            {% if field.help_text %}
+            <small class="form-text text-muted">
+                {{ field.help_text }}
+            </small>
+            {% endif %}
+        </div>
+        {% endfor %}
+        <button type="submit" class="btn btn-success" name="savebutton">
+            <i class="far fa-save"></i> Save
+        </button>
+        <a href="{% url 'delete' post.pk %}" class="btn btn-danger" role="button" name="deletebutton">
+            <i class="far fa-trash-alt"></i> Delete
+        </a>
+        <a href="{% url 'topic_posts' post.topic.board.pk post.topic.pk %}" class="btn btn-secondary"
+            role="button" name="cancel">Cancel
+        </a>
+    </form>
+</div>
+{% endblock %}

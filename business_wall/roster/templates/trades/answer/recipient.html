@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% load bootstrapify %}
+
+{% block content %}
+<div class="content">
+  <ol class="breadcrumb align-items-center mb-4">
+    <li class="breadcrumb-item">
+      <a href="{% url 'userprofile' %}">Profile</a>
+    </li>
+    <li class="breadcrumb-item"><a href="{% url 'requested' %}">Requested shift trades</a></li>
+    <li class="breadcrumb-item">{{trade.shift.duration_str}}</li>
+  </ol>
+  <div class="wrapper">
+    <p>
+      {{trade.trader}} has requested to trade their shift on
+      <strong>{{trade.shift.duration_str}}</strong>
+      with you.
+    </p>
+    <p>
+      {% if trade.recipient_answer == None %}
+        Please check your schedule and respond to the request.
+      {% else %}
+        You have already
+        {% if trade.recipient_answer == True %}
+          <strong>accepted</strong>
+        {% else %}
+          <strong>declined</strong>
+        {% endif %}
+        the request, did you change your mind?
+      {% endif %}
+    </p>
+    {{form.non_field_errors|bootstrapify_errors}}
+    <div class="d-flex">
+      <form method="post">
+        {% csrf_token %}
+        {% if trade.recipient_answer == False %}
+          <button class="btn btn-danger" type="submit" id="id_decline" name="answer" value="0" disabled>Decline</button>
+        {% else %}
+          <button class="btn btn-danger" type="submit" id="id_decline" name="answer" value="0">Decline</button>
+        {% endif %}
+      </form>
+      <form method="post" class="ml-1">
+        {% csrf_token %}
+        {% if trade.recipient_answer == True %}
+          <button class="btn btn-primary" type="submit" id="id_accept" name="answer" value="1" disabled>Accept</button>
+        {% else %}
+          <button class="btn btn-primary" type="submit" id="id_accept" name="answer" value="1">Accept</button>
+        {% endif %}
+      </form>
+    </div>
+  </div>
+
+</div>
+{% endblock content %}

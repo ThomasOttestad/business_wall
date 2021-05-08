@@ -1,0 +1,47 @@
+{% load user_util %}
+
+<div>
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Position</th>
+        <th>Departments</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% if not members %}
+        <td colspan="3">No members available</td>
+      {% endif %}
+
+      {% for member in members %}
+          <tr>
+            <th>
+              <a href="#">{{member.get_full_name}}</a>
+            </th>
+            <td>{{member|get_position}}</td>
+            <td>{% include "departments_dropdown.html" with departments=member|get_departments %}</td>
+            <td>
+              <a class="btn btn-primary" href="{% url 'inbox' %}" data-toggle="tooltip" data-placement="bottom" title="Message {{member}}">
+                <i class="fas fa-envelope-open-text"></i>
+              </a>
+
+              {% if department and user.is_manager %}
+              <a id="remove_{{member.pk}}"
+              class="btn btn-danger"
+              href="{% url 'remove_user_department' pk=department.pk uid=member.pk %}"
+              data-toggle="tooltip" data-placement="bottom" title="Remove user"
+              >
+                <i class="fas fa-minus"></i>
+              </a>
+              {% endif %}
+            </td>
+          </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <div class="mt-2">
+    {% include "pagination.html" with paginator=paginator currentPage=members %}
+  </div>
+</div>

@@ -1,0 +1,133 @@
+{% extends 'base.html' %}
+
+{% block title %} Boards {% endblock %}
+{% block content%}
+
+<div class="content">
+
+  <ol class="breadcrumb align-items-center mb-4">
+    <li class="breadcrumb-item active">Boards</li>
+    <li class="ml-auto">
+      {% if supervisor %}
+      <a href="{% url 'new_board' %}" class="btn btn-primary">
+        <i class="fas fa-plus-square"></i> New Board
+      </a>
+      {% endif %}
+    </li>
+  </ol>
+
+
+  <div class="wrapper">
+    <table class="table shadow-none p-3 mb-5 rounded">
+      <thead class="thead-light">
+        <tr>
+          <th>Pinned</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr>
+          <td>
+            <a href="{% url 'pinned_topics' %}" name="pinned" style="text-decoration: none;"><strong>Pinned
+                Topics</strong></a>
+            <small class="text-muted d-block">Pinned Messages</small>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <table class="table shadow-none p-3 mb-5 rounded">
+      <thead class="thead-light">
+        <tr>
+          <th style="padding-right: 195px">General Boards</th>
+          <th>Posts</th>
+          <th>Topics</th>
+          <th>Last Post</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {% for board in boards %}
+        {% if not board.dep %}
+        <tr>
+          <td>
+            <a href="{% url 'board_topics' board.pk %}"
+              style="text-decoration: none;"><strong>{{ board.name }}</strong></a>
+            <small class="text-muted d-block">{{ board.description }}</small>
+          </td>
+          <td class="align-middle">
+            {{ board.get_posts_count }}
+          </td>
+          <td class="align-middle">
+            {{ board.topics.count }}
+          </td>
+          <td class="align-middle">
+            {% with post=board.get_last_post %}
+            {% if post %}
+            <small>
+              <a href="{% url 'topic_posts' board.pk post.topic.pk %}">
+                By {{ post.created_by.get_full_name }} at {{ post.created_at.date }}
+              </a>
+            </small>
+            {% else %}
+            <small class="text-muted">
+              <em>No posts yet.</em>
+            </small>
+            {% endif %}
+            {% endwith %}
+          </td>
+        </tr>
+        {% endif %}
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <table class="table shadow-none p-3 mb-5 rounded">
+      <thead class="thead-light">
+        <tr>
+          <th>Department Boards</th>
+          <th>Posts</th>
+          <th>Topics</th>
+          <th>Last Post</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {% for board in boards %}
+        {% if board.dep %}
+        <tr>
+          <td>
+            <a href="{% url 'board_topics' board.pk %}"
+              style="text-decoration: none;"><strong>{{ board.name }}</strong></a>
+            <small class="text-muted d-block">{{ board.description }}</small>
+          </td>
+          <td class="align-middle">
+            {{ board.get_posts_count }}
+          </td>
+          <td class="align-middle">
+            {{ board.topics.count }}
+          </td>
+          <td class="align-middle">
+            {% with post=board.get_last_post %}
+            {% if post %}
+            <small>
+              <a href="{% url 'topic_posts' board.pk post.topic.pk %}">
+                By {{ post.created_by.get_full_name }} at {{ post.created_at.date }}
+              </a>
+            </small>
+            {% else %}
+            <small class="text-muted">
+              <em>No posts yet.</em>
+            </small>
+            {% endif %}
+            {% endwith %}
+          </td>
+        </tr>
+        {% endif %}
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% endblock %}

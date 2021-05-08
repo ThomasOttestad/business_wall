@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+
+{% load bootstrapify %}
+
+{% block content %}
+<div class="content">
+  <ol class="breadcrumb align-items-center mb-4">
+    <li class="breadcrumb-item">
+      <a href="{% url 'userprofile' %}">Profile</a>
+    </li>
+    <li class="breadcrumb-item active">Upload document</li>
+  </ol>
+
+  <div class="wrapper">
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      {% for field in form %}
+          {{field|bootstrapify_field}}
+      {% endfor %}
+      <div class="mt-3">
+        <button class="btn btn-primary" type="submit">Upload</button>
+        <a class="btn btn-secondary" href="{% url 'userprofile' %}">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock content %}
+
+{% block njaa %}
+<div class="container">
+    <div class="row w-100 h-100">
+        <div class="mx-auto my-auto">
+            <form method="post" enctype="multipart/form-data">
+                <h3>Please select a document to upload</h3>
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button type="submit">Upload</button>
+            </form>
+
+            <p><a href="{% url 'userprofile' %}">Return to your profile</a></p>
+
+        </div>
+    </div>
+</div>
+
+<div class="container">
+        <div class="row w-100 h-100">
+            <div class="mx-auto my-auto">
+                    <h3>Your uploaded documents:</h3>
+                    <table class="table">
+                        <thread>
+                            <tr>
+                                <th>Description</th>
+                                <th>View</th>
+                                <th>Delete</th>
+                            </tr>
+                        </thread>
+                        <tbody>
+                            {% for doc in documents %}
+                                <tr>
+                                    <td>{{ doc.description }}</td>
+                                    <td><a href="{{ doc.document.url }}" class="btn btn-primary btn-sm">
+                                    View PDF</a></td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                <p><a href="{% url 'userprofile' %}">Return to your profile</a></p>
+            </div>
+        </div>
+    </div>
+
+
+
+{% endblock %}

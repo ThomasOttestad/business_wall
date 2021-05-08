@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block header %}
+{% include "minimal_header.html" %}
+{% endblock header %}
+
+{% block content %}
+<div class="content row">
+  <div class="wrapper col-sm-12 col-md-6 offset-md-3 d-flex justify-content-center">
+    <div>
+      <h1>Oops, you are not allowed to be here!</h1>
+      <h3>Error 401: Unathorized</h3>
+    </div>
+  </div>
+</div>
+{% endblock content %}

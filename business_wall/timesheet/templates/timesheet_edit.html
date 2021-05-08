@@ -1,0 +1,192 @@
+{% extends 'base.html' %}
+{% load bootstrapify %}
+{% load timesheet_tag %}
+{% load static %}
+
+{% block stylesheets %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.1.2/css/tempusdominus-bootstrap-4.min.css" integrity="sha256-XPTBwC3SBoWHSmKasAk01c08M6sIA5gF5+sRxqak2Qs=" crossorigin="anonymous" />
+{% endblock stylesheets %}
+
+{% block content %}
+  <div class="content">
+    <div class="wrapper">
+      <div class="row align-items-center">
+        <div class="col-sm-6">
+          <form method="post">
+            {% csrf_token %}
+            <div class="row align-items-center">
+                {% if user.is_manager %}
+                <div class="col-md-12">
+                  {{calenderform.worker|bootstrapify_field}}
+                </div>
+                {% endif %}
+
+                <div class="col-md-6 col-sm-12">
+                  {{calenderform.month|bootstrapify_field}}
+                </div>
+                <div class="col-md-6 col-sm-12">
+                  {{calenderform.year|bootstrapify_field}}
+                </div>
+                <div class="col-md-12">
+                  <input class="mt-2 btn btn-primary" type="submit" value="Select">
+                </div>
+            </div>
+          </form>
+        </div>
+        <div class="col-sm-6 xs-sm-mt-2">
+          <table class="table">
+            <tr>
+              <th>Time worked</th>
+              <td>{{sum_duration|convert_hours}}</td>
+            </tr>
+            <tr>
+              <th>Overtime</th>
+              <td>{{sum_overtime|convert_hours}}</td>
+            </tr>
+          </table>
+        </div>
+      </div>
+
+      <table class="mt-4 table table-lg">
+        <thead>
+          <tr>
+            <th colspan="4">{{curr_month}} {{curr_year}}</th>
+          </tr>
+          <tr>
+            <th>Date</th>
+            <th>Times</th>
+            <th>Time worked</th>
+            <th>Overtime</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for i in time %}
+          <tr>
+            <td>
+              <a
+                data-id_note="{{i.note}}"
+                data-usrid="{{i.id}}"
+
+                data-id_start_time="{{i.start_time|date:'Y-m-d H:i'}}"
+                data-id_end_time="{{i.end_time|date:'Y-m-d H:i'}}"
+                data-id_note="{{i.note}}"
+
+                data-toggle="modal"
+                data-target="#editTime"
+                href="#"
+              >
+                {{i.start_time|date:'d M'}}
+              </a>
+            </td>
+            <td>{{i.start_time|date:'H:i'}} - {{i.end_time|date:'H:i'}}</td>
+            <td>{{i.time_worked|duration_format}}</td>
+            <td>{{i.overtime|duration_format}}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      {% if time|length > 10 %}
+      <table class="mt-4 table">
+        <tr>
+          <th>Time worked</th>
+          <td>{{sum_duration|convert_hours}}</td>
+        </tr>
+        <tr>
+          <th>Overtime</th>
+          <td>{{sum_overtime|convert_hours}}</td>
+        </tr>
+      </table>
+      {% endif %}
+
+
+    </div>
+  </div>
+
+<div class="div-modal">
+  <div class="modal fade show" id="editTime" role="dialog">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h4 class="modal-title"></h4>
+        </div>
+        <form method="POST" id="editTimeForm">
+          {% csrf_token %}
+            <div class="modal-body">
+              {{timeForm.non_field_errors}}
+              {% if user.is_manager %}
+                {{timeForm.start_time|bootstrapify_datepicker_field:"editTimeForm"}}
+                {{timeForm.end_time|bootstrapify_datepicker_field:"editTimeForm"}}
+              {% else %}
+                <fieldset disabled>
+                  {{timeForm.start_time|bootstrapify_datepicker_field:"editTimeForm"}}
+                  {{timeForm.end_time|bootstrapify_datepicker_field:"editTimeForm"}}
+                </fieldset>
+              {% endif %}
+              {{timeForm.note|bootstrapify_field}}
+            <div class="mt-2">
+              <button  type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+              <button  type="submit" class="btn btn-primary" name="time_save">Save</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+<div>
+{% endblock content %}
+
+
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment-with-locales.min.js" integrity="sha256-AdQN98MVZs44Eq2yTwtoKufhnU+uZ7v2kXnD5vqzZVo=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.1.2/js/tempusdominus-bootstrap-4.min.js" integrity="sha256-z0oKYg6xiLq3yJGsp/LsY9XykbweQlHl42jHv2XTBz4=" crossorigin="anonymous"></script>
+<script src="{% static "js/forms/validation.js" %}" type="text/javascript" charset="utf-8"></script>
+<script type="text/javascript">
+  {% if timeForm.errors %}
+    $("#editTime").modal('show');
+  {% endif %}
+
+  $('#editTimeForm #id_start_time').datetimepicker({
+    format: 'YYYY-MM-DD HH:mm',
+    locale: "en-gb",
+    sideBySide: true,
+    timeZone: "utc",
+    date: moment("{{ timeForm.start_time.value|default_if_none:"" }}")
+  });
+
+  $('#editTimeForm #id_end_time').datetimepicker({
+    format: 'YYYY-MM-DD HH:mm',
+    locale: "en-gb",
+    sideBySide: true,
+    timeZone: "utc",
+    date: moment("{{ timeForm.end_time.value|default_if_none:"" }}")
+  });
+
+  $("#editTimeForm #id_start_time").on("change.datetimepicker", function (e) {
+    $('#editTimeForm #id_end_time').datetimepicker('minDate', e.date);
+  });
+
+  $("#editTimeForm #id_end_time").on("change.datetimepicker", function (e) {
+    $('#editTimeForm #id_start_time').datetimepicker('maxDate', e.date);
+  });
+
+  $("td a").click(function () {
+    const $btn = $(this);
+
+    $("#editTime .modal-title").html("Edit {{worker.first_name}}'s clock in on " + moment($btn.data("id_start_time")).format("YYYY-MM-DD"));
+
+    $("#editTimeForm #id_end_time").val($btn.data("id_end_time"));
+    $("#editTimeForm #id_start_time").val($btn.data("id_start_time"));
+    $("#editTimeForm #id_note").val($btn.data("id_note"));
+
+    $("#editTimeForm").attr('action', "/timesheet/edit_time/" +  $btn.data("usrid"));
+  });
+
+  $('#editTime').on('hidden.bs.modal', function (e) {
+    resetForm("#editTimeForm");
+  });
+
+
+</script>
+{% endblock %}

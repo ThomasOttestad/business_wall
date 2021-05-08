@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% load bootstrapify %}
+
+{% block content %}
+<div class="content">
+  <div class="d-flex justify-content-center">
+    <div>
+      <h1>Register new employee</h1>
+      <form class="mt-4" method="post">
+        {% csrf_token %}
+        {{ form.non_field_errors|bootstrapify_errors }}
+        {% for field in form %}
+        {{ field|bootstrapify_field }}
+        {% endfor %}
+        <div class="mt-2">
+          <a class="btn btn-secondary" href="{%url 'colleagues' %}">Cancel</a>
+          <button class="btn btn-primary" type="submit">Register</button>
+        </div>
+      </form>
+    </div>
+    </div>
+</div>
+{% endblock content %}

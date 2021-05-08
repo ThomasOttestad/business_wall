@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block title %} Boards {% endblock %}
+{% block content%}
+<div class="content">
+  <ol class="breadcrumb mb-4">
+      <li class="breadcrumb-item"><a href="{% url 'board_home' %}">Boards</a></li>
+      <li class="breadcrumb-item"><a
+              href="{% url 'board_topics' post.topic.board.pk %}">{{ post.topic.board.name }}</a></li>
+      <li class="breadcrumb-item"><a
+              href="{% url 'topic_posts' post.topic.board.pk post.topic.pk %}">{{ post.topic.subject }}</a></li>
+      <li class="breadcrumb-item">
+        <a href="{% url 'edit_post' post.topic.board.pk post.topic.pk post.pk %}">Edit post</a>
+      </li>
+      <li class="breadcrumb-item active">Delete post</li>
+  </ol>
+
+  <div class="wrapper">
+    {% if post.created_by == user %}
+    <h1>Are you sure you want to delete this message? </h1>
+    <p>{{ post.message }}</p>
+
+    <form action="{% url 'delete_post' %}" method="POST">
+      {% csrf_token %}
+      <input type="hidden" name="post_pk" value="{{ post.pk }}" />
+      <input type="hidden" name="topic_pk" value="{{ post.topic.pk }}" />
+      <button type="submit" class="btn btn-danger" name="deletebutton"><i class="far fa-trash-alt"></i> Delete</button>
+      <a href="{% url 'topic_posts' post.topic.board.pk post.topic.pk %}" class="btn btn-secondary"
+        role="button">Cancel</a>
+    </form>
+    {% else %}
+    <h1>Something weird happened, please go back!</h1>
+    <a href="{% url 'topic_posts' post.topic.board.pk post.topic.pk %}" class="btn btn-outline-secondary" role="button">Go
+      back!</a>
+    {% endif %}
+  </div>
+
+</div>
+{% endblock %}
